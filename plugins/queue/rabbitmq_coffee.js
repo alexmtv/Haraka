@@ -1,7 +1,7 @@
 // queue/rabbitmq_coffee
 
 //node.coffee
-AMQP = require('amqp-coffee')
+var AMQP = require('amqp-coffee')
 
 //message to publish
 //msg = "Hello CloudAMQP"
@@ -25,12 +25,17 @@ exports.init_amqp_connection = function () {
 
 
 //Creates a new amqp Connection.
+  var  amqpConnection = new AMQP ({host: chost, port:cport, vhost: cvhost, login: cuser, password: cpassword},function (e, r){
+  if(e != null){
+  console.error("Error",e)
+  }})
+  
 amqpConnection = new AMQP {host: chost, port:cport, vhost: cvhost, login: cuser, password: cpassword}, (e, r)->
   if e?
     console.error "Error", e
 
   //Returns a channel that can be used to handle (declare, delete etc) queues.
-  amqpConnection.queue {queue: cqueueName}, (e,q)->
+  amqpConnection.queue( {queue: cqueueName},  function (e,q){
     q.declare ()->
       q.bind cexchangeType, cqueueName, ()->
       amqpConnection.publish cexchangeType, cqueueName, msg, {confirm: true}, (err, res)->
