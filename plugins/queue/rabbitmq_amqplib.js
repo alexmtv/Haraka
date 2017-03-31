@@ -39,10 +39,15 @@ exports.init_amqp_connection = function () {
     // var confirm = cfg.confirm === "true" || true;
     var autoDelete = cfg.autoDelete === "true" || false;
     deliveryMode = cfg.deliveryMode || 2;
+    var heartbeat = cfg.heartbeat || 60;
+    var rectimeout = cfg.rectimeout || 30;
 
-    amqp.connect("amqp://"+user+":"+password+"@"+host+":"+port+vhost, function (err, conn){
+    amqp.connect("amqp://"+user+":"+password+"@"+host+":"+port+vhost+"?heartbeat="+heartbeat, function (err, conn){
         if (err) {
             plugin.logerror("Connection to rabbitmq failed: " + err);
+            var reconnect = setInterval (this.init_amqp_connection(),rectimeout*1000);
+            plugin.logdebug("New attepmt in : " + rectimeout +"seconds");
+
             return;
         }
         // TODO: if !confirm conn.createChannel...
